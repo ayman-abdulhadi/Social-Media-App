@@ -1,0 +1,122 @@
+{# <!-- {% for image in images %}
+  <div class="image">
+    <a href="{{ image.get_absolute_url }}">
+      {% thumbnail image.image "300x300" crop="100%" as im %}
+        <a href="{{ image.get_absolute_url }}">
+          <img src="{{ im.url }}">
+        </a>
+      {% endthumbnail %}
+    </a>
+    <div class="info">
+      <a href="{{ image.get_absolute_url }}" class="title">{{ image.title }}</a>
+    </div>
+  </div>
+{% endfor %} --> #}
+<form class="form-inline col-lg-8 my-lg-0" style="max-width:800px;" method="get">
+  <div class="input-group" style="width:700px;">
+    <input type="text" class="form-control" aria-label="Recipient's username" aria-describedby="button-addon2">
+    <div class="input-group-append">
+      <button class="btn btn-outline-primary" type="button" id="button-addon2">
+          <i class="fa fa-search"></i>
+      </button>
+    </div>
+  </div>
+</form>
+
+
+
+
+
+
+
+var page = 1;
+var empty_page = false;
+var block_request = false;
+$(window).scroll(function() {
+  var margin = $(document).height() - $(window).height() - 200;
+  if ($(window).scrollTop() > margin && empty_page == false && block_request == false) {
+    block_request = true;
+    page += 1;
+    $.get('?page=' + page, function(data) {
+      if(data == '') {
+        empty_page = true;
+      }
+      else {
+        block_request = false;
+        $('#image-list').append(data);
+      }
+    });
+  }
+});
+
+
+$("#add-comment").click(function(e) {
+  var str = $("#comment-form").serialize();
+  $.post('{% url "images:like" %}',
+    {
+      id: $(this).data('id'),
+      action: $(this).data('action')
+    },
+  function(data) {
+    var data = JSON.parse(data);
+    var list = $('<div class="card gedf-card">');
+    var item = $('<div class="card-footer">').html(comments);
+    if (data) {
+      alert(data);
+      comments =""
+          ;
+      list.append(item);
+    }
+    $("#output").html(list);
+  });
+});
+
+$('a.comment').click(function(e){
+  e.preventDefault();
+  $.post('{% url "images:comment" %}',
+  {
+    id: $(this).data('id'),
+    action: $(this).data('action')
+  },
+  function(data){
+    if (data)
+    {
+
+    }
+  }
+  );
+});
+
+<script>
+
+	$("#add-comment").click(function(e) {
+		var str = $("#comment-form").serialize();
+		$.post('{% url "images:like" %}',
+      {
+        id: $(this).data('id'),
+        action: $(this).data('action')
+      },
+		function(data) {
+			var data = JSON.parse(data);
+			var list = $('<div class="card gedf-card">');
+			var item = $('<div class="card-footer">').html(comments);
+			if (data) {
+				comments =
+            "<div class='form-control'>" + "<div class='d-flex'>" + "<div class='mr-2'>"
+            + {% thumbnail data[0].user.avatar "45x45" crop="100%" as im %}
+            + "<img class='rounded-circle' width='45' src='{{ im.url }}'>"
+            + {% endthumbnail %}
+            + "</div>" + "<div class='ml-2'>"
+            + "<div class='h5 m-0'>{{ comment.user.username }}</div>"
+            + "<div class='text-muted h7 mb-2'> <i class='fa fa-clock-o'></i>{{ comment.created }}</div>"
+            + "</div>" + '<div class="ml-5 form-control">' + '<p class="card-text">'
+            + {{ data[0].body|linebreaks }}
+            + "</p>" + "</div>" + "</div>" + "</div>" + "</div>";
+
+				var item = $('<div class="card-footer">').html(comments);
+				list.append(item);
+			}
+			$("#output").html(list);
+		});
+  });
+</script>

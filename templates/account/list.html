@@ -1,0 +1,26 @@
+{% extends "base2.html" %}
+{% load thumbnail %}
+
+{% block title %}People{% endblock  %}
+
+{% block content %}
+  <div class="row">
+    {% for user in users %}
+      <div class="col-sm-3" style="padding-bottom:50px;">
+        <div class="card" style="width: 18rem;">
+          <a href="{{ user.get_absolute_url }}">
+            {% thumbnail user.avatar "180x180" crop="100%" as im %}
+              <img class="card-img-top" src="{{ im.url }}">
+            {% endthumbnail %}
+          </a>
+          <div class="card-body">
+            <h5 class="card-title">
+              {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+            </h5>
+            <a href="{{ user.get_absolute_url }}" class="btn btn-primary">View Profile</a>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock  %}

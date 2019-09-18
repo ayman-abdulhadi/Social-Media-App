@@ -1,0 +1,98 @@
+{% extends "base2.html" %}
+
+{% load thumbnail %}
+
+{% block title %}
+{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+{% endblock  %}
+
+{% block content %}
+  <div class="col-sm-10" style="padding-left:250px;padding-bottom:100px;">
+    <div class="card mb-3" style=";height:500px">
+      <img class="card-img-top" src="{{ user.avatar.url }}">
+      {% with total_followers=user.followers.count %}
+        <div class="card-body">
+          <h5 class="card-title">{{ user.get_full_name }}</h5>
+          <p class="card-text">
+            <span class="count">
+              <span class="totlat">{{ total_followers }}</span>
+              follower{{ total_followers|pluralize }}
+            </span>
+          </p>
+          <a href="#" data-id="{{ user.id }}" data-action="{% if request.user in user.followers.all %}un{% endif %}follow"
+            class="follow button btn btn-primary" style="width:300px;">
+            {% if request.user not in user.followers.all %}
+              Follow
+            {% else %}
+              Unfollow
+            {% endif %}
+          </a>
+        </div>
+      {% endwith %}
+    </div>
+  </div><br><br><br>
+  <div class="container-fluid gedf-wrapper">
+    <div class="row">
+      <div class="col-md-2">
+      </div>
+      <div class="col-md-8 gedf-main">
+        <div class="image-list">
+          {% include "images/list_ajax.html" with images=user.images_created.all %}
+        </div>
+      </div>
+    </div>
+  </div><br><br><br>
+
+{% endblock  %}
+
+{% block domready %}
+  $('a.like').click(function(e){
+    e.preventDefault();
+    $.post('{% url "images:like" %}',
+    {
+      id: $(this).data('id'),
+      action: $(this).data('action')
+    },
+    function(data){
+      if (data['status'] == 'ok')
+      {
+        var previous_action = $('a.like').data('action');
+        // toggle data-action
+        $('a.like').data('action', previous_action == 'like' ? 'unlike' : 'like');
+        // toggle link text
+        $('a.like').text(previous_action == 'like' ? ' unLike' : ' Like');
+        // update total likes
+        var previous_likes = parseInt($('span.count .total').text());
+        $('span.count .total').text(previous_action == 'like' ? previous_likes + 1 : previous_likes - 1);
+      }
+    }
+    );
+  });
+
+
+  $('a.follow').click(function(e){
+    e.preventDefault();
+    $.post('{% url "account:user_follow" %}',
+    {
+      id: $(this).data('id'),
+      action: $(this).data('action')
+    },
+    function(data){
+      if (data['status'] == 'ok') {
+        var previous_action = $('a.follow').data('action');
+        // toggle data-action
+        $('a.follow').data('action',
+        previous_action == 'follow' ? 'unfollow' : 'follow');
+        // toggle link text
+        $('a.follow').text(
+        previous_action == 'follow' ? 'Unfollow' : 'Follow');
+        // update total followers
+        var previous_followers = parseInt(
+        $('span.count .total').text());
+        $('span.count .total').text(previous_action == 'follow' ?
+        previous_followers + 1 : previous_followers - 1);
+      }
+    }
+    );
+  });
+{% endblock %}

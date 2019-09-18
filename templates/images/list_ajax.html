@@ -1,0 +1,115 @@
+{% load thumbnail %}
+
+{% for image in images %}
+  <!--- \\\\\\\Post-->
+  <div class="card gedf-card">
+    <div class="card-header">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="mr-2">
+            {% thumbnail image.user.avatar "45x45" crop="100%" as im %}
+              <a href="{{ image.user.get_absolute_url }}" target="_blank">
+                <img class="rounded-circle" src="{{ im.url }}">
+              </a>
+            {% endthumbnail %}
+          </div>
+            <div class="ml-2">
+              <div class="h5 m-0"><a href="{{ image.user.get_absolute_url }}" target="_blank">{{ image.user.username }}</a></div>
+              <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i> {{ image.created }}</div>
+            </div>
+        </div>
+          {% if request.user == image.user %}
+          {% else %}
+            <div class="btn-group">
+              <a href="#" data-id="{{ image.user.id }}"
+                  data-action="{% if request.user in image.user.followers.all %}un{% endif %}follow"
+                  class="follow button btn btn-primary" style="width:120px;">
+                {% if request.user not in image.user.followers.all %}
+                  Follow
+                {% else %}
+                  unFollow
+                {% endif %}
+              </a>
+            </div>
+          {% endif %}
+      </div>
+
+    </div>
+      <div class="card-body">
+
+        <p class="card-text">
+            {{ image.body|linebreaks }}
+        </p>
+        <div class="card">
+          <a href="{% if image.image %}{{ image.image.url }}{% endif %}" target="_blank">
+            <img src="{% if image.image %}{{ image.image.url }}{% else %}{{ image.url }}{% endif %} " class="card-img-top">
+          </a>
+        </div>
+      </div>
+      <div class="card-footer">
+        {% with total_likes=image.users_like.count users_like=image.users_like.all %}
+          <a href="#" data-id="{{ image.id }}"
+                data-action="{% if request.user in users_like %}un{% endif %}like"
+                class="like button card-link fa fa-gittip">
+            {% if request.user not in users_like %} Like{% else %} unLike{% endif %}
+          </a>
+          <a class="card-link"><i class="fa fa-comment"></i> Comment</a>
+          <div class="card-link dropdown">
+            <i class="card-link fa fa-mail-forward"></i> Share
+            <div class="dropdown-content">
+              <a class="btn btn-lg btn-fb" href="https://www.facebook.com/sharer/sharer.php?u=http://127.0.0.1{{ image.get_absolute_url|urlencode }}" target="_blank" ><i class="fa fa-facebook-f pr-1"></i></a>
+              <a class="btn btn-lg btn-tw" href="http://twitter.com/share?url=http://127.0.0.1{{ image.get_absolute_url|urlencode }}&amp;text={{ post.title }}" target="_blank"><i class="fa fa-twitter"></i></a>
+              <a class="btn btn-lg btn-in" href="http://www.linkedin.com/shareArticle?mini=true&amp;url=http://127.0.0.1{{ image.get_absolute_url|urlencode }}&amp;title={{ image.title }}&amp;ro=false&amp;summary=&amp;source=" target="_blank"><i class="fa fa-linkedin"></i></a>
+            </div>
+          </div>
+          <p class="float-right" style="color:blue;">{{ total_likes }} like{{ total_likes|pluralize }}</p>
+        {% endwith %}
+          <br><br>
+        {% with image.comments.all as comments %}
+        {% if comments %}
+        {% for comment in comments %}
+          <div class="card-body">
+            <div>
+              <div class="d-flex">
+                  <div class="mr-2">
+                    {% thumbnail comment.user.avatar "45x45" crop="100%" as im %}
+                      <img class="rounded-circle" width="45" src="{{ im.url }}" alt="">
+                    {% endthumbnail %}
+                  </div>
+                  <div class="ml-2">
+                      <div class="h5 m-0">{{ comment.user.username }}</div>
+                      <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i> {{ comment.created|timesince }} ago</div>
+                  </div>
+                  <div class="" style="padding-left:50px;">
+                    <p class="card-text">
+                      {{ comment.body|linebreaks }}
+                    </p>
+                  </div>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        {% if CommentForm %}
+          <form id="comment-form" action="." method="post">
+            {% csrf_token %}
+            <div class="form-group">
+              {{ CommentForm.body }}
+            </div>
+            <input type="hidden" name="image" value="{{ image.id }}">
+            <input id="id_user" name="user" value="{{ user.id }}" hidden>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">
+                    Post Comment
+                </button>
+
+            </div>
+          </form>
+        {% endif %}
+      </div>
+
+  </div>
+  <br><br><br>
+  <!-- Post /////-->
+{% endfor %}
